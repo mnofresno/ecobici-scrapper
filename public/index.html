@@ -2,23 +2,8 @@
 
     <head>
         <title>DISPONIBLIDAD BICICLETAS</title>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-        <script>
-            var activarAlarma = function()
-            {
-                $.ajax({ url: "/activar", success: setEstadoAlarma });
-            };
-            
-            var desactivarAlarma = function()
-            {
-                $.ajax({ url: "/desactivar", success: setEstadoAlarma });
-            };
-            
-            var setEstadoAlarma = function(response)
-            {
-                $('#estadoAlarma').text(response);
-            };
-        </script>
+        <script src="jquery/dist/jquery.min.js"></script>
+        <script src="main.js"></script>
     </head>
     <body>
     <button  onclick="javascript:activarAlarma();">ACTIVAR ALARMA</button>
