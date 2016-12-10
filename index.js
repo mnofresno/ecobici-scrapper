@@ -6,12 +6,30 @@ var cheerio = require("cheerio");
 var exec    = require('child_process').exec;
 var path    = require('path');
 
-var alarmaActivada  = false;
-var umbralBicicletas = 2;
-var estaciones = [ 17 ];
+var config = {};
+if(fs.existsSync('./config.js'))
+{
+    config  = require('./config');
+}
+else
+{
+    console.log("ARCHIVO config.js NO EXISTE");
+    config.alarmaActivada  = false;
+    config.umbralBicicletas = 2;
+    config.estaciones = [ 17 ];
+    config.baseFolder = "/public";
+    config.modulesFolder = "/node_modules";
+    config.PORT=7728; 
+}
 
-var baseFolder = "/public";
-var modulesFolder = "/node_modules";
+
+var alarmaActivada   = config.alarmaActivada;
+var umbralBicicletas = config.umbralBicicletas;
+var estaciones       = config.estaciones;
+var baseFolder       = config.baseFolder;
+var modulesFolder    = config.modulesFolder;
+var PORT             = config.PORT;
+
 /*
 var estaciones = [ ];
 
@@ -21,9 +39,6 @@ for(var i = 1; i < 83 ; i++)
 }
 */
 var urlApiCiudad = function(estacionId) { return "http://epok.buenosaires.gob.ar/getObjectContent/?id=estaciones_de_bicicletas|" + estacionId; };
-
-//Lets define a port we want to listen to
-const PORT=7728; 
 
 var traerDatosEstaciones = function(callback, callbackUmbral)
 {     
@@ -145,6 +160,12 @@ function handleSpecialRequest(request, response)
         response.end("ACTIVADA");
         return;
     }
+    else if(_.includes(request.url, "config"))
+    {
+        config = request.body;
+        response.end();
+        return;
+    }
 
     fs.readFile("./" + baseFolder + "/index.html", function (err, html)
     {
@@ -178,7 +199,7 @@ function handleSpecialRequest(request, response)
                 
                 var outputHtml = $.html();
                 
-                var dataOptions = { estadoAlarma: alarmaActivada };
+                var dataOptions = { estadoAlarma: alarmaActivada, config: config };
                 outputHtml = outputHtml.replace("<body>", "<body data-options='" + JSON.stringify(dataOptions) + "'>");
                 
                 response.write(outputHtml);
@@ -191,7 +212,7 @@ function handleSpecialRequest(request, response)
     });       
 }
 
-var keywords = [ "index.html", "activar", "desactivar" ];    
+var keywords = [ "index.html", "activar", "desactivar", "config" ];    
 function handleRequest(request, response)
 {
     if(request.url === "/" || _.includes(keywords, request.url.split("/").slice(-1).pop()))

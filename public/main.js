@@ -4,7 +4,7 @@ $(document).ready(function()
     
     var alarmaCheck = $('#alarmaCheck');
     alarmaCheck.prop('checked', options.estadoAlarma);
-    $('#estadoAlarma').text((options.estadoAlarma ? "ACTIVADA" : "DESACTIVADA"));
+    setEstadoAlarma((options.estadoAlarma ? "ACTIVADA" : "DESACTIVADA"));
     alarmaCheck.on('change', function()
     {
         if(alarmaCheck.prop('checked'))
@@ -31,4 +31,9 @@ var desactivarAlarma = function()
 var setEstadoAlarma = function(response)
 {
     $('#estadoAlarma').text(response);
+};
+
+var setConfig = function(config)
+{
+    $.ajax({ url: "/config", data: "config", method: "POST", contentType: "application/json" });
 };

@@ -1,0 +1,10 @@
+var config = {};
+
+config.alarmaActivada   = false;
+config.umbralBicicletas = 2;
+config.estaciones       = [ 17 ];
+config.baseFolder       = "/public";
+config.modulesFolder    = "/node_modules";
+config.PORT             = 7728; 
+
+module.exports = config;
