@@ -5,6 +5,8 @@ var fs      = require("fs");
 var cheerio = require("cheerio");
 var exec = require('child_process').exec;
 
+
+var alarmaActivada  = false;
 var umbralBicicletas = 2;
 var estaciones = [ 17 ];
 /*
@@ -69,8 +71,22 @@ var traerDatosEstaciones = function(callback, callbackUmbral)
 
 function app()
 {
+    
     function handleRequest(request, response)
     {
+        if(_.includes(request.url, "desactivar"))
+        {
+            alarmaActivada = false;
+            response.end("DESACTIVADA");
+            return;
+        }
+        else if(_.includes(request.url, "activar"))
+        {
+            alarmaActivada = true;
+            response.end("ACTIVADA");
+            return;
+        }
+
         fs.readFile('./index.html', function (err, html)
         {
             if (err)
@@ -100,7 +116,7 @@ function app()
                         
                         $('body').append(estacionHtmlModificada);
                     });
-                
+                    $('#estadoAlarma').text((alarmaActivada ? "ACTIVADA" : "DESACTIVADA"));
                     response.write($.html());
                     response.end();
                 }; 
@@ -121,6 +137,10 @@ function app()
     
     var intervalCallback = function(estacionUmbral)
     {
+        if(!alarmaActivada)
+        {
+            return;
+        }
         exec("beep");
         console.log("HAY MAS DE %s BICICLETAS EN ESTACION %s", umbralBicicletas, estacionUmbral.nombre);
     };
