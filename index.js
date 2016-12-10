@@ -6,7 +6,7 @@ var cheerio = require("cheerio");
 var exec = require('child_process').exec;
 
 var umbralBicicletas = 2;
-var estaciones = [ 17];
+var estaciones = [ 17 ];
 /*
 var estaciones = [ ];
 
@@ -33,16 +33,24 @@ var traerDatosEstaciones = function(callback, callbackUmbral)
             var bicisDisponibles  = _.find(responseJs.contenido, { nombreId: 'bicicletas_disponibles'});
             var nombreEstacion    = _.find(responseJs.contenido, { nombreId: 'nombre'});
             var ubicacionEstacion = _.find(responseJs.contenido, { nombreId: 'ubicacion'});
-            outputEstaciones.push({ id: estacionIdBuscada, nombre: nombreEstacion.valor, ubicacion: ubicacionEstacion.valor, disponibles: bicisDisponibles.valor });
+            
+            var estacionActual = {};
             
             if(!bicisDisponibles || !ubicacionEstacion || !nombreEstacion)
             {
-                outputEstaciones.push({ id: estacionIdBuscada, nombre: "N/A", ubicacion: "N/A", disponibles: "N/A", data: JSON.stringify(data)  });
+            
+                estacionActual = { id: estacionIdBuscada, nombre: "N/A", ubicacion: "N/A", disponibles: "N/A", data: JSON.stringify(data)  };
             }
+            else
+            {
+                estacionActual = { id: estacionIdBuscada, nombre: nombreEstacion.valor, ubicacion: ubicacionEstacion.valor, disponibles: bicisDisponibles.valor };
+            }
+            
+            outputEstaciones.push(estacionActual);
             
             if(parseInt(bicisDisponibles.valor) > umbralBicicletas && callbackUmbral)
             {
-                callbackUmbral();
+                callbackUmbral(estacionActual);
             }
             
             if(outputEstaciones.length === estaciones.length && callback)
@@ -111,9 +119,10 @@ function app()
         console.log("Server listening on: http://localhost:%s", PORT);
     });
     
-    var intervalCallback = function(data)
+    var intervalCallback = function(estacionUmbral)
     {
         exec("beep");
+        console.log("HAY MAS DE %s BICICLETAS EN ESTACION %s", umbralBicicletas, estacionUmbral.nombre);
     };
     
     setInterval( function(){ traerDatosEstaciones(null, intervalCallback); }, 1000);
