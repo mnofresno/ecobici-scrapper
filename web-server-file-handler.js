@@ -1,5 +1,6 @@
-var path    = require('path');
-var fs      = require("fs");
+var path      = require('path');
+var fs        = require("fs");
+var return404 = require("./404.js");
 
 function handleSimpleFileRequest(config)
 {
@@ -44,11 +45,7 @@ function handleSimpleFileRequest(config)
             {
                 if(error.code == 'ENOENT')
                 {
-                    fs.readFile("." + baseFolder + "/404.html", function(error, content)
-                    {
-                        response.writeHead(404, { 'Content-Type': 'text/html' });
-                        response.end(content, 'utf-8');
-                    });
+                    return404(fs, baseFolder, response);
                 }
                 else
                 {

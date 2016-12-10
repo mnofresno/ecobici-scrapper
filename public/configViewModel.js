@@ -12,6 +12,8 @@ function ConfigViewModel()
     self.estaciones     = ko.observableArray([16]);
     self.alarmaActivada = ko.observable(false);
     
+    self.estacion = ko.observable();
+    
     return self;
 }
 

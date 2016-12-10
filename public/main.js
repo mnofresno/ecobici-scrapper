@@ -31,10 +31,12 @@ function ViewModel()
     var self = this;
    
     self.Config = new ConfigViewModel();
+    self.estacionesPosibles = ko.observableArray([]);
     
     self.GuardarConfig = function()
     {
         var datos = ko.mapping.toJS(self.Config);
+        datos.estaciones = [self.Config.estacion()];
         setConfig(datos);
     };
     
@@ -44,20 +46,27 @@ function ViewModel()
         self.Config.alarmaActivada(data.alarmaActivada);
         self.Config.UmbralAlarma(data.UmbralAlarma);
         self.Config.estaciones(data.estaciones);
-        
+        self.Config.estacion(data.estaciones[0]);
     };
+    
+    self.loadDependencies = function()
+    {
+        $.ajax({ url: "resources/estaciones", success: self.estacionesPosibles, contentType: "application/json" });
+    };
+    
+    self.loadDependencies();
     
     return self;
 }
 
 var activarAlarma = function()
 {
-    $.ajax({ url: "/activar", success: setEstadoAlarma });
+    $.ajax({ url: "/commands/activar", success: setEstadoAlarma });
 };
 
 var desactivarAlarma = function()
 {
-    $.ajax({ url: "/desactivar", success: setEstadoAlarma });
+    $.ajax({ url: "/commands/desactivar", success: setEstadoAlarma });
 };
 
 var setEstadoAlarma = function(response)
@@ -67,5 +76,5 @@ var setEstadoAlarma = function(response)
 
 var setConfig = function(config)
 {
-    $.ajax({ url: "/config", data: ko.toJSON(config), method: "POST", contentType: "application/json" });
+    $.ajax({ url: "/commands/config", data: ko.toJSON(config), method: "POST", contentType: "application/json" });
 };

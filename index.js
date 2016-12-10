@@ -1,11 +1,16 @@
-var najax   = require("najax");
-var _       = require("lodash");
-var http    = require("http");
-var fs      = require("fs");
-var cheerio = require("cheerio");
-var exec    = require('child_process').exec;
-var ko      = require('knockout');
+var najax     = require("najax");
+var _         = require("lodash");
+var http      = require("http");
+var fs        = require("fs");
+var cheerio   = require("cheerio");
+var exec      = require('child_process').exec;
+var ko        = require('knockout');
+var return404 = require("./404.js");
+
 require('knockout-mapping');
+
+var estacionesPosibles = [{ id: 17, descripcion: "Plaza almagro" },
+                          { id: 70, descripcion: "Araoz"         }];
 
 var config = {};
 if(fs.existsSync('./config.js'))
@@ -108,21 +113,18 @@ var traerDatosEstaciones = function(callback, callbackUmbral)
     });
 };
 
-function handleSpecialRequest(request, response)
-{
-    if(_.includes(request.url, "desactivar"))
+var commands = {
+    desactivar: function(request, response)
     {
         alarmaActivada = false;
         response.end("DESACTIVADA");
-        return;
-    }
-    else if(_.includes(request.url, "activar"))
+    },
+    activar: function(request, response)
     {
         alarmaActivada = true;
         response.end("ACTIVADA");
-        return;
-    }
-    else if(_.includes(request.url, "config"))
+    },
+    config: function(request, response)
     {
         var body = '';
         request.on('data', function(data)
@@ -135,9 +137,46 @@ function handleSpecialRequest(request, response)
             setConfig(JSON.parse(body));
             response.end();
         });
+    }
+};
+
+var resources = {
+    estaciones: function(request, response)
+    {
+        response.writeHeader(200, {"Content-Type": "application/json"});  
+        response.end(JSON.stringify(estacionesPosibles));
+    }
+};
+
+function handleSpecialRequest(request, response, partesUrl)
+{    
+    var last = _.last(partesUrl);
+    if(_.includes(partesUrl, "commands"))
+    {
+        if(_.includes(Object.keys(commands), last))
+        {
+            commands[last](request, response);
+        }
+        else
+        {
+            return404(fs, baseFolder, response);
+        }
         return;
     }
-
+    
+    if(_.includes(partesUrl, "resources"))
+    {
+        if(_.includes(Object.keys(resources), last))
+        {
+            resources[last](request, response);
+        }
+        else
+        {
+            return404(fs, baseFolder, response);
+        }
+        return;
+    }
+    
     fs.readFile("./" + baseFolder + "/index.html", function (err, html)
     {
         if (err)
@@ -183,12 +222,15 @@ function handleSpecialRequest(request, response)
     });       
 }
 
-var keywords = [ "index.html", "activar", "desactivar", "config" ];    
+var keywords = [ "index.html", "commands", "resources" ];    
+
 function handleRequest(request, response)
 {
-    if(request.url === "/" || _.includes(keywords, request.url.split("/").slice(-1).pop()))
+    var partesUrl = request.url.split("/");
+    
+    if(request.url === "/" || (partesUrl.length > 1 &&  _.includes(keywords, partesUrl[1])))
     {
-        return handleSpecialRequest(request, response);
+        return handleSpecialRequest(request, response, partesUrl);
     }
     else
     {

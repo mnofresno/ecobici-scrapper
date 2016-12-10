@@ -15,20 +15,41 @@
     <body>
         <div id="main" class="container">
             <div class="row">
-                <div class="col-xs-12">
-                    <form data-bind="with: Config, submit: GuardarConfig">
-                        <div class="form-group">
-                            <label for="alarmaCheck" class="checkbox-inline">Alarma </label>
-                            <input id="alarmaCheck" type="checkbox" data-toggle="toggle" data-on="Activada" data-off="Desactivada">
+                <div class="col-xs-6">
+                    <br />
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Configuración</div>
+                        <div class="panel-body">
+                            <form data-bind="with: Config, submit: GuardarConfig">
+                                <div class="form-group form-group-sm row">
+                                    <label class="col-sm-2 control-label" for="formGroupInputSmall">Alarma</label>
+                                    <div class="col-sm-10">
+                                        <input id="alarmaCheck" type="checkbox" data-toggle="toggle" data-on="Activada" data-off="Desactivada">
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-sm row">
+                                    <label class="col-sm-2 control-label" for="formGroupInputSmall">Umbral</label>
+                                    <div class="col-sm-10">
+                                        <input class="form-control" type="number" data-bind="value: UmbralAlarma" placeholder="2">
+                                    </div>
+                                </div>
+                                <div class="form-group form-group-sm row">
+                                    <label class="col-sm-2 control-label" for="formGroupInputSmall">Estacion</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" data-bind="value: estacion, options: $parent.estacionesPosibles, optionsValue: 'id', optionsText: 'descripcion'" />
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="form-group form-group-sm row">
+                                    <div class="col-sm-3 col-sm-offset-9">
+                                        <button class="btn btn-primary" type="submit">Guardar</button>
+                                    </div>
+                                </div>
+                            </form>
+
                         </div>
-                        <div class="form-group form-group-sm">
-                            <label class="col-sm-2 control-label" for="formGroupInputSmall">Umbral</label>
-                            <div class="col-sm-10">
-                                <input class="form-control" type="number" data-bind="value: UmbralAlarma" placeholder="2">
-                            </div>
-                        </div>
-                        <button class="btn btn-default" type="submit">Guardar</button>
-                    </form>
+                    </div>
                 </div>
             </div>
             <div class="row">
