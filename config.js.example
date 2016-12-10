@@ -1,7 +1,7 @@
 var config = {};
 
 config.alarmaActivada   = false;
-config.umbralBicicletas = 2;
+config.UmbralAlarma     = 2;
 config.estaciones       = [ 17 ];
 config.baseFolder       = "/public";
 config.modulesFolder    = "/node_modules";

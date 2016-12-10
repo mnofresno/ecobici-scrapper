@@ -4,7 +4,8 @@ var http    = require("http");
 var fs      = require("fs");
 var cheerio = require("cheerio");
 var exec    = require('child_process').exec;
-var path    = require('path');
+var ko      = require('knockout');
+require('knockout-mapping');
 
 var config = {};
 if(fs.existsSync('./config.js'))
@@ -14,21 +15,42 @@ if(fs.existsSync('./config.js'))
 else
 {
     console.log("ARCHIVO config.js NO EXISTE");
-    config.alarmaActivada  = false;
-    config.umbralBicicletas = 2;
-    config.estaciones = [ 17 ];
-    config.baseFolder = "/public";
-    config.modulesFolder = "/node_modules";
-    config.PORT=7728; 
+    config.alarmaActivada   = false;
+    config.UmbralAlarma     = 2;
+    config.estaciones       = [ 17 ];
+    config.baseFolder       = "/public";
+    config.modulesFolder    = "/node_modules";
+    config.PORT             =7728; 
 }
 
-
-var alarmaActivada   = config.alarmaActivada;
-var umbralBicicletas = config.umbralBicicletas;
-var estaciones       = config.estaciones;
+var alarmaActivada   = null;
+var UmbralAlarma     = null;
+var estaciones       = null;
 var baseFolder       = config.baseFolder;
 var modulesFolder    = config.modulesFolder;
 var PORT             = config.PORT;
+
+function setConfig(conf)
+{
+    UmbralAlarma     = conf.UmbralAlarma;
+    estaciones       = conf.estaciones;
+    alarmaActivada   = conf.alarmaActivada;
+}
+
+function getConfig()
+{
+    var conf = {};
+    
+    conf.UmbralAlarma     = UmbralAlarma;
+    conf.estaciones       = estaciones;
+    conf.alarmaActivada   = alarmaActivada;
+    
+    return conf;
+}
+
+var WebServerFileHandler = require('./web-server-file-handler')(config);
+
+setConfig(config);
 
 /*
 var estaciones = [ ];
@@ -47,8 +69,7 @@ var traerDatosEstaciones = function(callback, callbackUmbral)
     {
         var cargarInfo = function(data)
         {
-            
-            var responseJs = JSON.parse(data);
+            var responseJs = typeof(data) === 'object' ? data : JSON.parse(data);
             
             var bicisDisponibles  = _.find(responseJs.contenido, { nombreId: 'bicicletas_disponibles'});
             var nombreEstacion    = _.find(responseJs.contenido, { nombreId: 'nombre'});
@@ -68,7 +89,7 @@ var traerDatosEstaciones = function(callback, callbackUmbral)
             
             outputEstaciones.push(estacionActual);
             
-            if(parseInt(bicisDisponibles.valor) > umbralBicicletas && callbackUmbral)
+            if(parseInt(bicisDisponibles.valor) > UmbralAlarma && callbackUmbral)
             {
                 callbackUmbral(estacionActual);
             }
@@ -87,65 +108,6 @@ var traerDatosEstaciones = function(callback, callbackUmbral)
     });
 };
 
-function handleSimpleFileRequest(request, response)
-{
-    console.log('request starting...');
-
-    var publicFile = "." + baseFolder + (request.url.charAt(0) === "/" ? request.url : "/" + request.url);
-    
-    var filePath = fs.existsSync(publicFile) ? publicFile :  '.' + modulesFolder + "/" + request.url;
-
-    var extname = path.extname(filePath);
-    var contentType = 'text/html';
-    switch (extname)
-    {
-        case '.js':
-            contentType = 'text/javascript';
-            break;
-        case '.css':
-            contentType = 'text/css';
-            break;
-        case '.json':
-            contentType = 'application/json';
-            break;
-        case '.png':
-            contentType = 'image/png';
-            break;      
-        case '.jpg':
-            contentType = 'image/jpg';
-            break;
-        case '.wav':
-            contentType = 'audio/wav';
-            break;
-    }
-
-    fs.readFile(filePath, function(error, content)
-    {
-        if (error)
-        {
-            if(error.code == 'ENOENT')
-            {
-                fs.readFile("." + baseFolder + "/404.html", function(error, content)
-                {
-                    response.writeHead(200, { 'Content-Type': 'text/html' });
-                    response.end(content, 'utf-8');
-                });
-            }
-            else
-            {
-                response.writeHead(500);
-                response.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
-                response.end(); 
-            }
-        }
-        else {
-            response.writeHead(200, { 'Content-Type': contentType });
-            response.end(content, 'utf-8');
-        }
-    });
-}
-
-
 function handleSpecialRequest(request, response)
 {
     if(_.includes(request.url, "desactivar"))
@@ -162,8 +124,17 @@ function handleSpecialRequest(request, response)
     }
     else if(_.includes(request.url, "config"))
     {
-        config = request.body;
-        response.end();
+        var body = '';
+        request.on('data', function(data)
+        {
+            body += data;
+        });
+        
+        request.on('end', function(data)
+        {
+            setConfig(JSON.parse(body));
+            response.end();
+        });
         return;
     }
 
@@ -199,7 +170,7 @@ function handleSpecialRequest(request, response)
                 
                 var outputHtml = $.html();
                 
-                var dataOptions = { estadoAlarma: alarmaActivada, config: config };
+                var dataOptions = { estadoAlarma: alarmaActivada, config: getConfig() };
                 outputHtml = outputHtml.replace("<body>", "<body data-options='" + JSON.stringify(dataOptions) + "'>");
                 
                 response.write(outputHtml);
@@ -221,7 +192,7 @@ function handleRequest(request, response)
     }
     else
     {
-        return handleSimpleFileRequest(request, response);
+        return WebServerFileHandler(request, response);
     }   
 }    
 
@@ -241,7 +212,7 @@ function app()
             return;
         }
         exec("beep");
-        console.log("HAY MAS DE %s BICICLETAS EN ESTACION %s", umbralBicicletas, estacionUmbral.nombre);
+        console.log("HAY MAS DE %s BICICLETAS EN ESTACION %s", UmbralAlarma, estacionUmbral.nombre);
     };
     
     setInterval( function(){ traerDatosEstaciones(null, intervalCallback); }, 2000);
