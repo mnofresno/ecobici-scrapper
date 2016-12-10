@@ -1,14 +1,33 @@
 <html>
-
     <head>
         <title>DISPONIBLIDAD BICICLETAS</title>
         <script src="jquery/dist/jquery.min.js"></script>
         <script src="main.js"></script>
+        <script type="text/javascript" src="bootstrap/dist/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="bootstrap/dist/css/bootstrap.min.css" media="screen" />
     </head>
     <body>
-    <button  onclick="javascript:activarAlarma();">ACTIVAR ALARMA</button>
-    <button onclick="javascript:desactivarAlarma();">DESACTIVAR ALARMA</button>
-    
-    <div>ESTADO ALARMA: <span id="estadoAlarma"></span></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-6">
+                <button class="btn btn-primary" onclick="javascript:activarAlarma();">ACTIVAR ALARMA</button>
+            </div>        
+            <div class="col-xs-6">
+                <button class="btn btn-primary" onclick="javascript:desactivarAlarma();">DESACTIVAR ALARMA</button>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-xs-12">
+                <div>ESTADO ALARMA: <span id="estadoAlarma"></span></div>    
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-xs-12">
+                <div id="datosEstaciones"></div>
+            </div>
+        </div>
+    </div>
     </body>
 </html>

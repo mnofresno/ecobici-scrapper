@@ -168,7 +168,7 @@ function handleSpecialRequest(request, response)
                     estacionHtmlModificada = estacionHtmlModificada.replace("{{ ubicacionEstacion }}", estacion.ubicacion  );
                     estacionHtmlModificada = estacionHtmlModificada.replace("{{ nombreEstacion }}"   , estacion.nombre     );
                     
-                    $('body').append(estacionHtmlModificada);
+                    $('#datosEstaciones').append(estacionHtmlModificada);
                 });
                 $('#estadoAlarma').text((alarmaActivada ? "ACTIVADA" : "DESACTIVADA"));
                 response.write($.html());
@@ -214,7 +214,7 @@ function app()
         console.log("HAY MAS DE %s BICICLETAS EN ESTACION %s", umbralBicicletas, estacionUmbral.nombre);
     };
     
-    setInterval( function(){ traerDatosEstaciones(null, intervalCallback); }, 1000);
+    setInterval( function(){ traerDatosEstaciones(null, intervalCallback); }, 2000);
 }
 
 app();
