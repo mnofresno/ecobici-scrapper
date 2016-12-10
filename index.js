@@ -175,8 +175,13 @@ function handleSpecialRequest(request, response)
                     
                     $('#datosEstaciones').append(estacionHtmlModificada);
                 });
-                $('#estadoAlarma').text((alarmaActivada ? "ACTIVADA" : "DESACTIVADA"));
-                response.write($.html());
+                
+                var outputHtml = $.html();
+                
+                var dataOptions = { estadoAlarma: alarmaActivada };
+                outputHtml = outputHtml.replace("<body>", "<body data-options='" + JSON.stringify(dataOptions) + "'>");
+                
+                response.write(outputHtml);
                 response.end();
             }; 
             
