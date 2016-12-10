@@ -82,7 +82,8 @@ function handleSimpleFileRequest(request, response)
 
     var extname = path.extname(filePath);
     var contentType = 'text/html';
-    switch (extname) {
+    switch (extname)
+    {
         case '.js':
             contentType = 'text/javascript';
             break;
@@ -105,14 +106,18 @@ function handleSimpleFileRequest(request, response)
 
     fs.readFile(filePath, function(error, content)
     {
-        if (error) {
-            if(error.code == 'ENOENT'){
-                fs.readFile("." + baseFolder + "/404.html", function(error, content) {
+        if (error)
+        {
+            if(error.code == 'ENOENT')
+            {
+                fs.readFile("." + baseFolder + "/404.html", function(error, content)
+                {
                     response.writeHead(200, { 'Content-Type': 'text/html' });
                     response.end(content, 'utf-8');
                 });
             }
-            else {
+            else
+            {
                 response.writeHead(500);
                 response.end('Sorry, check with the site admin for error: '+error.code+' ..\n');
                 response.end(); 
@@ -196,7 +201,6 @@ function handleRequest(request, response)
 
 function app()
 {
-        
     var server = http.createServer(handleRequest);
     
     server.listen(PORT, function()
